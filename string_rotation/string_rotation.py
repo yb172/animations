@@ -5,23 +5,25 @@ import pyclbr
 
 class StringRotation(Scene):
     def construct(self):
-        letters = ["R", "e", "v", "o", "l", "v", "e", "r"]
-        word = TextMobject(*letters)
+        word = Text("Revolver", font='Roboto Mono')
+        word.set_height(1)
+        word.shift(0.5*UP)
         self.add(word)
 
-        # word2 = TextMobject(*letters)
-        # word2.set_opacity(0.3)
-        # word2.set_height(1)
-        # self.add(word2)
+        word2 = Text("verRevol", font='Roboto Mono')
+        word2.set_height(1)
+        word2.shift(0.5*UP)
+        word2.set_opacity(0.3)
+        self.add(word2)
 
         self.wait()
 
         revol = VGroup(word[0], word[1], word[2], word[3], word[4])
         ver = VGroup(word[5], word[6], word[7])
         self.play(ApplyMethod(ver.shift, DOWN))
-        ver_len = ver.get_width() + 0.2
+        ver_len = ver.get_width() + 0.175
         self.play(ApplyMethod(revol.shift, RIGHT*ver_len))
-        revol_len = revol.get_width() + 0.2
+        revol_len = revol.get_width() + 0.175
         self.play(ApplyMethod(ver.shift, LEFT*revol_len))
         self.play(ApplyMethod(ver.shift, UP))
 
