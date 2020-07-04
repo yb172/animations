@@ -12,11 +12,11 @@ To render the animation in low resolution (for preview) run following command:
 
 where `string_rotation/string_rotation.py` is path to the file that contains the scene (relative to root directory) and `StringRotation` is the name of the scene
 
-Animation result would be written to `/play_output/videos/...`.
+Animation result would be written to a newly created `media` directory in `video` subdirectory: `media/video/...`.
 
 To render in full quality run the same command but without `-l`. To render full quality gif use `-i` instead of `-l`.
 
-The script `play.sh` [uses docker to run `manim`](https://github.com/3b1b/manim/tree/cf656e9c21ec7f23a71a9f93b503294ec74c1b66#using-docker) so you should have `docker` and `docker-compose` installed.
+The script `play.sh` uses docker to run `manim` so you should have `docker` installed.
 
 ## Using the newest manim version
 
