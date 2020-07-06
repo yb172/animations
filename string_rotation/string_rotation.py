@@ -3,9 +3,27 @@ import os
 import pyclbr
 
 CELL_LEN = 1.75
+RED = "#FC544B"
+YELLOW = "#FAC735"
+LIGHT_GREEN = "#2AD444"
+DARK_GREEN = "#1F9F32"
+MAROON = "#7F2355"
+LIGHT_BLUE = "#00D1FF"
+BLUE = "#578BF1"
+ALMOST_BLACK = "#363535"
+DARK_GREY = "#5A5A5A"
+GREY = "#7A7A7A"
+LIGHT_GREY = "#999999"
+ALMOST_WHITE = "#C6C6C6"
 
 
 class StringRotation(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
     def create_grid(self, len):
         grid = VGroup()
         for i in range(0, len):
@@ -26,11 +44,21 @@ class StringRotation(Scene):
         # Create and add grid
         grid = self.create_grid(len(THE_WORD))
         grid.shift(SHIFT_UP*UP)
-        self.add(grid)
+        # self.add(grid)
 
         # Create, align & add word
-        word = Text(THE_WORD, font='Roboto Mono')
-        word.set_height(1)
+        color_map = {
+            "M": RED,
+            "a": YELLOW,
+            "t": DARK_GREEN,
+            "r": LIGHT_BLUE,
+            "i": YELLOW,
+            "x": BLUE,
+        }
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
         word.shift(SHIFT_UP*UP)
         x_mask = [1, 0, 0]
         for i in range(0, len(grid)):
@@ -42,13 +70,20 @@ class StringRotation(Scene):
         # Animate movement
         PREFIX_LEN = 4
         suffix_len = len(THE_WORD) - PREFIX_LEN
+        suffix_shift = suffix_len * CELL_LEN
+        prefix_shift = PREFIX_LEN * CELL_LEN
         prefix, suffix = self.split_word(word, PREFIX_LEN)
         self.play(ApplyMethod(suffix.shift, DROP_AMOUNT*DOWN))
-        self.play(ApplyMethod(prefix.shift, suffix_len * CELL_LEN * RIGHT))
-        self.play(ApplyMethod(suffix.shift, PREFIX_LEN * CELL_LEN * LEFT))
+        self.play(ApplyMethod(prefix.shift, suffix_shift * RIGHT))
+        self.play(ApplyMethod(suffix.shift, prefix_shift * LEFT))
         self.play(ApplyMethod(suffix.shift, DROP_AMOUNT*UP))
 
         self.wait()
+
+        self.play(FadeOut(word))
+        prefix.shift(suffix_shift * LEFT)
+        suffix.shift(prefix_shift * RIGHT)
+        self.play(FadeIn(word))
 
 
 if __name__ == "__main__":
