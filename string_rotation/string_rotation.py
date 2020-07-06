@@ -2,30 +2,43 @@ from manimlib.imports import *
 import os
 import pyclbr
 
+CELL_LEN = 1.75
 
 class StringRotation(Scene):
-    def construct(self):
-        word = Text("Revolver", font='Roboto Mono')
-        word.set_height(1)
-        word.shift(0.5*UP)
-        self.add(word)
+    def CreateGrid(self, len):
+        grid = VGroup()
+        for i in range(0, len):
+            grid.add(Square(side_length=CELL_LEN))
+        grid.arrange_submobjects(RIGHT, buff=0)
+        return grid
 
-        word2 = Text("verRevol", font='Roboto Mono')
-        word2.set_height(1)
-        word2.shift(0.5*UP)
-        word2.set_opacity(0.3)
-        self.add(word2)
+    def construct(self):
+        SHIFT_UP = 0.5
+        THE_WORD = "Matrix"
+        grid = self.CreateGrid(len(THE_WORD))
+        grid.shift(SHIFT_UP*UP)
+        self.add(grid)
+        word = Text(THE_WORD, font='Roboto Mono')
+        word.set_height(1)
+        word.shift(SHIFT_UP*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+          word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+
+        self.add(word)
 
         self.wait()
 
-        revol = VGroup(word[0], word[1], word[2], word[3], word[4])
-        ver = VGroup(word[5], word[6], word[7])
-        self.play(ApplyMethod(ver.shift, DOWN))
-        ver_len = ver.get_width() + 0.175
-        self.play(ApplyMethod(revol.shift, RIGHT*ver_len))
-        revol_len = revol.get_width() + 0.175
-        self.play(ApplyMethod(ver.shift, LEFT*revol_len))
-        self.play(ApplyMethod(ver.shift, UP))
+        DROP = 1.5
+
+        matr = VGroup(word[0], word[1], word[2], word[3])
+        ix = VGroup(word[4], word[5])
+        self.play(ApplyMethod(ix.shift, DROP*DOWN))
+        ix_len = CELL_LEN*2
+        self.play(ApplyMethod(matr.shift, RIGHT*ix_len))
+        matr_len = CELL_LEN*4
+        self.play(ApplyMethod(ix.shift, LEFT*matr_len))
+        self.play(ApplyMethod(ix.shift, DROP*UP))
 
         self.wait()
 
