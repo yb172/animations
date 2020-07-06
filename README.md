@@ -14,9 +14,21 @@ where `string_rotation/string_rotation.py` is path to the file that contains the
 
 Animation result would be written to a newly created `media` directory in `video` subdirectory: `media/video/...`.
 
-To render in full quality run the same command but without `-l`. To render full quality gif use `-i` instead of `-l`.
+To render in full quality run the same command but without `-l`.
 
 The script `play.sh` uses docker to run `manim` so you should have `docker` installed.
+
+### Creating .gif
+
+Manim provides `-i` flag to render animation to .gif file but for some reason it doesn't work. As a workaround use `gif.sh` as follows:
+
+```bash
+./gif.sh string_rotation 480p15 StringRotation
+```
+
+where `string_rotation` is python file name (without `.py` extension), `480p15` is a resolution, and `StringRotation` is a scene name.
+
+Please note that `gif.sh` needs [`gif.ski`](https://gif.ski) installed
 
 ## Using the newest manim version
 
