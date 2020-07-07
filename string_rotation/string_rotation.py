@@ -31,6 +31,48 @@ def create_grid(len):
     return grid
 
 
+class TitleImage(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
+    def construct(self):
+        SHIFT_UP = 0.5
+        THE_WORD = "Matrix"
+
+        # Create the word with moved suffix
+        updated_word = Text("ixMatrix",
+                            font='Merriweather',
+                            color=ALMOST_BLACK,
+                            size=2)
+        updated_word.shift(SHIFT_UP*UP)
+        updated_word.set_opacity(0.3)
+        self.add(updated_word)
+
+        # Create, align & add word
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        word.shift(SHIFT_UP*UP)
+        word.align_to(updated_word, RIGHT)
+        self.add(word)
+
+        # Create an arrow from suffix to its final position
+        arrow_start = VGroup(updated_word[-2:]).get_bottom()
+        arrow_end = VGroup(updated_word[:2]).get_bottom()
+        arrow = CurvedArrow(arrow_start, arrow_end,
+                            angle=-TAU / 3,
+                            color=ALMOST_WHITE,
+                            tip_length=0.25)
+        arrow.shift(0.15*DOWN)
+        self.add(arrow)
+
+        self.wait()
+
+
 class StringRotation(Scene):
     CONFIG = {
         "camera_config": {
