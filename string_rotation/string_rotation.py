@@ -17,6 +17,20 @@ LIGHT_GREY = "#999999"
 ALMOST_WHITE = "#C6C6C6"
 
 
+def split_word(word, prefix_len):
+    prefix = VGroup(*word[0:prefix_len])
+    suffix = VGroup(*word[prefix_len:])
+    return prefix, suffix
+
+
+def create_grid(len):
+    grid = VGroup()
+    for i in range(0, len):
+        grid.add(Square(side_length=CELL_LEN))
+    grid.arrange_submobjects(RIGHT, buff=0)
+    return grid
+
+
 class StringRotation(Scene):
     CONFIG = {
         "camera_config": {
@@ -24,66 +38,58 @@ class StringRotation(Scene):
         },
     }
 
-    def create_grid(self, len):
-        grid = VGroup()
-        for i in range(0, len):
-            grid.add(Square(side_length=CELL_LEN))
-        grid.arrange_submobjects(RIGHT, buff=0)
-        return grid
-
-    def split_word(self, word, prefix_len):
-        prefix = VGroup(*word[0:prefix_len])
-        suffix = VGroup(*word[prefix_len:])
-        return prefix, suffix
-
     def construct(self):
         SHIFT_UP = 0.5
-        DROP_AMOUNT = 1.75
+        DROP_AMOUNT = 1
         THE_WORD = "Matrix"
 
         # Create and add grid
-        grid = self.create_grid(len(THE_WORD))
-        grid.shift(SHIFT_UP*UP)
+        # grid = self.create_grid(len(THE_WORD))
+        # grid.shift(SHIFT_UP*UP)
         # self.add(grid)
 
         # Create, align & add word
-        color_map = {
-            "M": RED,
-            "a": YELLOW,
-            "t": DARK_GREEN,
-            "r": LIGHT_BLUE,
-            "i": YELLOW,
-            "x": BLUE,
-        }
         word = Text(THE_WORD,
                     font='Merriweather',
                     color=ALMOST_BLACK,
                     size=2)
         word.shift(SHIFT_UP*UP)
-        x_mask = [1, 0, 0]
-        for i in range(0, len(grid)):
-            word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
         self.add(word)
+
+        self.wait()
+
+        angle = math.radians(-180)
+        arc = Arc(radius=1.23, angle=angle, color=ALMOST_BLACK)
+        arc.shift(SHIFT_UP*UP)
 
         self.wait()
 
         # Animate movement
         PREFIX_LEN = 4
         suffix_len = len(THE_WORD) - PREFIX_LEN
-        suffix_shift = suffix_len * CELL_LEN
-        prefix_shift = PREFIX_LEN * CELL_LEN
-        prefix, suffix = self.split_word(word, PREFIX_LEN)
-        self.play(ApplyMethod(suffix.shift, DROP_AMOUNT*DOWN))
-        self.play(ApplyMethod(prefix.shift, suffix_shift * RIGHT))
-        self.play(ApplyMethod(suffix.shift, prefix_shift * LEFT))
-        self.play(ApplyMethod(suffix.shift, DROP_AMOUNT*UP))
+        # prefix_shift = suffix_len * CELL_LEN
+        # suffix_shift = PREFIX_LEN * CELL_LEN
+        prefix_shift = 0.92
+        suffix_shift = 2.42
+        prefix, suffix = split_word(word, PREFIX_LEN)
+        # self.play(ApplyMethod(suffix.shift, DROP_AMOUNT*DOWN))
+        # self.play(ApplyMethod(prefix.shift, prefix_shift * RIGHT))
+        # self.play(ApplyMethod(suffix.shift, suffix_shift * LEFT))
+        # self.play(ApplyMethod(suffix.shift, DROP_AMOUNT*UP))
+        self.play(
+            ApplyMethod(prefix.shift, prefix_shift * RIGHT),
+            MoveAlongPath(suffix, arc)
+        )
 
         self.wait()
 
         self.play(FadeOut(word))
-        prefix.shift(suffix_shift * LEFT)
-        suffix.shift(prefix_shift * RIGHT)
-        self.play(FadeIn(word))
+        word2 = Text(THE_WORD,
+                     font='Merriweather',
+                     color=ALMOST_BLACK,
+                     size=2)
+        word2.shift(SHIFT_UP*UP)
+        self.play(FadeIn(word2))
 
 
 if __name__ == "__main__":
