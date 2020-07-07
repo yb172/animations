@@ -26,7 +26,7 @@ def split_word(word, prefix_len):
 def create_grid(len):
     grid = VGroup()
     for i in range(0, len):
-        grid.add(Square(side_length=CELL_LEN))
+        grid.add(Square(side_length=CELL_LEN, color=ALMOST_BLACK))
     grid.arrange_submobjects(RIGHT, buff=0)
     return grid
 
@@ -85,11 +85,6 @@ class StringRotation(Scene):
         DROP_AMOUNT = 1
         THE_WORD = "Matrix"
 
-        # Create and add grid
-        # grid = self.create_grid(len(THE_WORD))
-        # grid.shift(SHIFT_UP*UP)
-        # self.add(grid)
-
         # Create, align & add word
         word = Text(THE_WORD,
                     font='Merriweather',
@@ -132,6 +127,36 @@ class StringRotation(Scene):
                      size=2)
         word2.shift(SHIFT_UP*UP)
         self.play(FadeIn(word2))
+
+
+class WordInCells(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
+    def construct(self):
+        SHIFT_UP = 0.5
+        THE_WORD = "Matrix"
+
+        # Create and add grid
+        grid = create_grid(len(THE_WORD))
+        grid.shift(SHIFT_UP*UP)
+        self.add(grid)
+
+        # Create, align & add word
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        word.shift(SHIFT_UP*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+            word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+        self.add(word)
+
+        self.wait()
 
 
 if __name__ == "__main__":
