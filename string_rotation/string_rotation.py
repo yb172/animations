@@ -2,11 +2,12 @@ from manimlib.imports import *
 import os
 import pyclbr
 
-CELL_LEN = 1.75
+CELL_LEN = 1.5
 RED = "#FC544B"
 YELLOW = "#FAC735"
 LIGHT_GREEN = "#2AD444"
-DARK_GREEN = "#1F9F32"
+GREEN = "#1F9F32"
+DARK_GREEN = "#11661E"
 MAROON = "#7F2355"
 LIGHT_BLUE = "#00D1FF"
 BLUE = "#578BF1"
@@ -26,7 +27,20 @@ def split_word(word, prefix_len):
 def create_grid(len):
     grid = VGroup()
     for i in range(0, len):
-        grid.add(Square(side_length=CELL_LEN, color=ALMOST_BLACK))
+        cell = VGroup()
+        cell.add(Square(
+            side_length=CELL_LEN,
+            stroke_width=3,
+            sheen_factor=0.8,
+            sheen_direction=UP,
+            fill_color=GREY,
+            fill_opacity=0.1))
+        cell.add(Square(
+            side_length=CELL_LEN,
+            stroke_color=DARK_GREY,
+            stroke_width=3,
+        ))
+        grid.add(cell)
     grid.arrange_submobjects(RIGHT, buff=0)
     return grid
 
