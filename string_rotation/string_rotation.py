@@ -40,6 +40,13 @@ def create_grid(len, stroke_color=DARK_GREY, fill_color=GREY):
             stroke_color=stroke_color,
             stroke_width=3,
         ))
+        idx = Text(str(i),
+                   font='Merriweather',
+                   color=stroke_color,
+                   size=0.4)
+        idx.align_to(cell[1], UR)
+        idx.shift(0.1*LEFT + 0.1*DOWN)
+        cell.add(idx)
         grid.add(cell)
     grid.arrange_submobjects(RIGHT, buff=0)
     return grid
