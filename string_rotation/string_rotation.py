@@ -24,7 +24,7 @@ def split_word(word, prefix_len):
     return prefix, suffix
 
 
-def create_grid(len):
+def create_grid(len, stroke_color=DARK_GREY, fill_color=GREY):
     grid = VGroup()
     for i in range(0, len):
         cell = VGroup()
@@ -33,11 +33,11 @@ def create_grid(len):
             stroke_width=3,
             sheen_factor=0.8,
             sheen_direction=UP,
-            fill_color=GREY,
+            fill_color=fill_color,
             fill_opacity=0.1))
         cell.add(Square(
             side_length=CELL_LEN,
-            stroke_color=DARK_GREY,
+            stroke_color=stroke_color,
             stroke_width=3,
         ))
         grid.add(cell)
@@ -171,6 +171,88 @@ class WordInCells(Scene):
         self.add(word)
 
         self.wait()
+
+
+class Copy(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
+    def construct(self):
+        ROTATION = 2
+        ORIGINAL_SHIFT = 0.5
+        SHIFT = 1.5
+        THE_WORD = "Matrix"
+
+        # Create and add grid
+        grid = create_grid(len(THE_WORD))
+        grid.shift(ORIGINAL_SHIFT*UP)
+        self.add(grid)
+
+        # Create, align & add word
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        word.shift(ORIGINAL_SHIFT*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+            word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+        self.add(word)
+
+        self.wait()
+        self.play(
+            ApplyMethod(word.shift, (SHIFT-ORIGINAL_SHIFT)*UP),
+            ApplyMethod(grid.shift, (SHIFT-ORIGINAL_SHIFT)*UP)
+        )
+
+        end_grid = create_grid(len(THE_WORD), DARK_GREEN, GREEN)
+        end_grid.shift(SHIFT*DOWN)
+
+        self.play(FadeIn(end_grid))
+
+        end_word = word.copy()
+        end_word.set_opacity(.3)
+        self.add(end_word)
+
+        rotation_middle_idx = len(THE_WORD)-ROTATION
+        for i in range(0, len(THE_WORD)):
+            shift = 2*SHIFT*DOWN
+            if i < rotation_middle_idx:
+                char_shift = ROTATION
+                shift = shift+char_shift*CELL_LEN*RIGHT
+            else:
+                char_shift = len(THE_WORD)-ROTATION
+                shift = shift+char_shift*CELL_LEN*LEFT
+            self.play(ApplyMethod(end_word[i].shift, shift), run_time=0.7)
+            self.play(ApplyMethod(end_word[i].set_opacity, 1), run_time=0.2)
+
+        self.wait()
+
+        self.play(
+            FadeOut(word),
+            FadeOut(grid)
+        )
+
+        self.play(
+            ApplyMethod(end_word.shift, (SHIFT+ORIGINAL_SHIFT)*UP),
+            ApplyMethod(end_grid.shift, (SHIFT+ORIGINAL_SHIFT)*UP)
+        )
+
+        self.wait()
+
+        self.play(
+            FadeOut(end_word),
+            FadeOut(end_grid)
+        )
+        word.shift((SHIFT-ORIGINAL_SHIFT)*DOWN)
+        grid.shift((SHIFT-ORIGINAL_SHIFT)*DOWN)
+        self.play(
+            FadeIn(word),
+            FadeIn(grid)
+        )
 
 
 if __name__ == "__main__":
