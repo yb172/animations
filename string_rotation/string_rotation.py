@@ -24,30 +24,34 @@ def split_word(word, prefix_len):
     return prefix, suffix
 
 
+def create_cell(text, stroke_color=DARK_GREY, fill_color=GREY):
+    cell = VGroup()
+    cell.add(Square(
+        side_length=CELL_LEN,
+        stroke_width=3,
+        sheen_factor=0.8,
+        sheen_direction=UP,
+        fill_color=fill_color,
+        fill_opacity=0.1))
+    cell.add(Square(
+        side_length=CELL_LEN,
+        stroke_color=stroke_color,
+        stroke_width=3,
+    ))
+    idx = Text(text,
+               font='Merriweather',
+               color=stroke_color,
+               size=0.4)
+    idx.align_to(cell[1], UR)
+    idx.shift(0.1*LEFT + 0.1*DOWN)
+    cell.add(idx)
+    return cell
+
+
 def create_grid(len, stroke_color=DARK_GREY, fill_color=GREY):
     grid = VGroup()
     for i in range(0, len):
-        cell = VGroup()
-        cell.add(Square(
-            side_length=CELL_LEN,
-            stroke_width=3,
-            sheen_factor=0.8,
-            sheen_direction=UP,
-            fill_color=fill_color,
-            fill_opacity=0.1))
-        cell.add(Square(
-            side_length=CELL_LEN,
-            stroke_color=stroke_color,
-            stroke_width=3,
-        ))
-        idx = Text(str(i),
-                   font='Merriweather',
-                   color=stroke_color,
-                   size=0.4)
-        idx.align_to(cell[1], UR)
-        idx.shift(0.1*LEFT + 0.1*DOWN)
-        cell.add(idx)
-        grid.add(cell)
+        grid.add(create_cell(str(i), stroke_color, fill_color))
     grid.arrange_submobjects(RIGHT, buff=0)
     return grid
 
@@ -258,6 +262,78 @@ class Copy(Scene):
         grid.shift((SHIFT-ORIGINAL_SHIFT)*DOWN)
         self.play(
             FadeIn(word),
+            FadeIn(grid)
+        )
+
+
+class InPlaceSlow(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
+    def construct(self):
+        ROTATION = 2
+        SHIFT_UP = 0.5
+        SHIFT_DOWN = 2
+        THE_WORD = "Matrix"
+
+        # Create and add grid
+        grid = create_grid(len(THE_WORD))
+        grid.shift(SHIFT_UP*UP)
+        self.add(grid)
+
+        # Create, align & add word
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        word.shift(SHIFT_UP*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+            word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+        self.add(word)
+
+        original_word = word.copy()
+
+        self.wait()
+
+        var_grid = create_cell("tmp")
+        var_grid.shift(SHIFT_DOWN*DOWN)
+
+        self.play(FadeIn(var_grid))
+
+        for step in range(0, ROTATION):
+            # Last character moving down
+            last_ch = word[-1-step]
+            start = last_ch.get_center()
+            diff = CELL_LEN*(len(THE_WORD)-1)
+            mid = start + (SHIFT_UP+SHIFT_DOWN)*DOWN + diff/2*LEFT
+            end = last_ch.get_center() + diff*LEFT
+            arc_down = ArcBetweenPoints(start, mid, angle=-TAU/4)
+            arc_up = ArcBetweenPoints(mid, end, angle=-TAU/4)
+            self.play(MoveAlongPath(last_ch, arc_down), run_time=0.7)
+
+            # Middle characters going right
+            for i in range(len(THE_WORD)-2-step, -1-step, -1):
+                idx = i % len(THE_WORD)
+                shift = CELL_LEN*RIGHT
+                self.play(ApplyMethod(word[idx].shift, shift), run_time=0.7)
+
+            # Last character moving up
+            self.play(MoveAlongPath(last_ch, arc_up), run_time=0.7)
+
+        self.play(FadeOut(var_grid))
+
+        self.wait()
+
+        self.play(
+            FadeOut(word),
+            FadeOut(grid)
+        )
+        self.play(
+            FadeIn(original_word),
             FadeIn(grid)
         )
 
