@@ -60,6 +60,8 @@ class TitleImage(Scene):
     CONFIG = {
         "camera_config": {
             "background_color": WHITE,
+            "pixel_height": 1280,
+            "pixel_width": 720,
         },
     }
 
@@ -95,6 +97,8 @@ class TitleImage(Scene):
         arrow.shift(0.15*DOWN)
         self.add(arrow)
 
+        all = VGroup(updated_word, word, arrow)
+        all.scale(1.5)
         self.wait()
 
 
@@ -116,28 +120,20 @@ class StringRotation(Scene):
                     color=ALMOST_BLACK,
                     size=2)
         word.shift(SHIFT_UP*UP)
+        word.scale(1.5)
+        word2 = word.copy()
         self.add(word)
 
         self.wait()
 
-        angle = math.radians(-180)
-        arc = Arc(radius=1.23, angle=angle, color=ALMOST_BLACK)
+        arc = Arc(radius=1.82, angle=math.radians(-180))
         arc.shift(SHIFT_UP*UP)
-
         self.wait()
 
         # Animate movement
         PREFIX_LEN = 4
-        suffix_len = len(THE_WORD) - PREFIX_LEN
-        # prefix_shift = suffix_len * CELL_LEN
-        # suffix_shift = PREFIX_LEN * CELL_LEN
-        prefix_shift = 0.92
-        suffix_shift = 2.42
+        prefix_shift = 1.4
         prefix, suffix = split_word(word, PREFIX_LEN)
-        # self.play(ApplyMethod(suffix.shift, DROP_AMOUNT*DOWN))
-        # self.play(ApplyMethod(prefix.shift, prefix_shift * RIGHT))
-        # self.play(ApplyMethod(suffix.shift, suffix_shift * LEFT))
-        # self.play(ApplyMethod(suffix.shift, DROP_AMOUNT*UP))
         self.play(
             ApplyMethod(prefix.shift, prefix_shift * RIGHT),
             MoveAlongPath(suffix, arc)
@@ -146,11 +142,6 @@ class StringRotation(Scene):
         self.wait()
 
         self.play(FadeOut(word))
-        word2 = Text(THE_WORD,
-                     font='Merriweather',
-                     color=ALMOST_BLACK,
-                     size=2)
-        word2.shift(SHIFT_UP*UP)
         self.play(FadeIn(word2))
 
 
