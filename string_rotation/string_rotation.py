@@ -338,6 +338,89 @@ class InPlaceSlow(Scene):
         )
 
 
+class InPlaceFast(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
+    def reverse(self, word, start, end):
+        half = math.floor((end - start)/2)
+        for i in range(0, half):
+            ch_1 = word[start+i]
+            ch_2 = word[end-i-1]
+            dist = end - 1 - start - i*2
+            ch_1_end = ch_1.get_center() + dist*CELL_LEN*RIGHT
+            arc_1 = ArcBetweenPoints(ch_1.get_center(), ch_1_end)
+            ch_2_end = ch_2.get_center() + dist*CELL_LEN*LEFT
+            arc_2 = ArcBetweenPoints(ch_2.get_center(), ch_2_end)
+            self.play(
+                MoveAlongPath(ch_1, arc_1),
+                MoveAlongPath(ch_2, arc_2),
+                run_time=0.7)
+
+    def construct(self):
+        ROTATION = 2
+        SHIFT_UP = 0.5
+        SHIFT_DOWN = 2
+        THE_WORD = "Matrix"
+
+        # Create and add grid
+        grid = create_grid(len(THE_WORD))
+        grid.shift(SHIFT_UP*UP)
+        self.add(grid)
+
+        # Create, align & add word
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        word.shift(SHIFT_UP*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+            word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+        self.add(word)
+
+        original_word = word.copy()
+
+        self.wait()
+
+        rotation_middle_idx = len(THE_WORD)-ROTATION
+
+        # Reverse the prefix
+        self.reverse(word, 0, rotation_middle_idx)
+        self.wait(0.5)
+
+        # Reverse the suffix
+        self.reverse(word, rotation_middle_idx, len(THE_WORD))
+        self.wait(0.5)
+
+        # Refresh the word (to work with good indexes)
+        also_word = Text("rtaMxi",
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        also_word.shift(SHIFT_UP*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+            also_word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+        self.add(also_word)
+        self.remove(word)
+        self.reverse(also_word, 0, len(THE_WORD))
+
+        self.wait(2)
+
+        self.play(
+            FadeOut(also_word),
+            FadeOut(grid)
+        )
+        self.play(
+            FadeIn(original_word),
+            FadeIn(grid)
+        )
+
+
 if __name__ == "__main__":
     # Call this file at command line to make sure all scenes work with version of manim
     # type "python manim_tutorial_P37.py" at command line to run all scenes in this file
