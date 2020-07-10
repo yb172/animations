@@ -175,6 +175,90 @@ class WordInCells(Scene):
         self.wait()
 
 
+class InPlaceWrong(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
+    def move_char(self, word, src_ch, start, dst):
+        dst_idx = dst % len(word)
+        moving_ch = src_ch.copy()
+        moving_ch.set_opacity(1)
+        ch_2 = word[dst_idx]
+        dist = dst - start
+        src_ch_dst = src_ch.get_center() + dist*CELL_LEN*RIGHT
+        if (dst > dst_idx):
+            dist = len(word) - dist
+            src_ch_dst = src_ch.get_center() + dist*CELL_LEN*LEFT
+        arc_1 = ArcBetweenPoints(src_ch.get_center(), src_ch_dst, angle=-TAU/4)
+        self.play(
+            MoveAlongPath(moving_ch, arc_1),
+            ApplyMethod(ch_2.set_opacity, 0),
+            run_time=0.7)
+        return moving_ch
+
+    def construct(self):
+        ROTATION = 2
+        SHIFT_UP = 0.5
+        SHIFT_DOWN = 2
+        THE_WORD = "Matrix"
+
+        # Create and add grid
+        grid = create_grid(len(THE_WORD))
+        grid.shift(SHIFT_UP*UP)
+        self.add(grid)
+
+        # Create, align & add word
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        word.shift(SHIFT_UP*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+            word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+        self.add(word)
+
+        original_word = word.copy()
+
+        self.wait()
+
+        new_word = VGroup()
+        idx = 0
+        letter_m = self.move_char(word, word[0], idx, ROTATION+idx)
+        new_word.add(letter_m)
+        idx = idx+1
+        letter_a = self.move_char(word, word[1], idx, ROTATION+idx)
+        new_word.add(letter_a)
+        idx = idx+1
+        letter_t = self.move_char(word, new_word[idx-2], idx, ROTATION+idx)
+        new_word.add(letter_t)
+        idx = idx+1
+        letter_r = self.move_char(word, new_word[idx-2], idx, ROTATION+idx)
+        new_word.add(letter_r)
+        idx = idx+1
+        letter_i = self.move_char(word, new_word[idx-2], idx, ROTATION+idx)
+        new_word.add(letter_i)
+        idx = idx+1
+        letter_x = self.move_char(word, new_word[idx-2], idx, ROTATION+idx)
+        new_word.add(letter_x)
+        idx = idx+1
+
+        self.wait()
+
+        self.play(
+            FadeOut(word),
+            FadeOut(new_word),
+            FadeOut(grid)
+        )
+        self.play(
+            FadeIn(original_word),
+            FadeIn(grid)
+        )
+
+
 class Copy(Scene):
     CONFIG = {
         "camera_config": {
