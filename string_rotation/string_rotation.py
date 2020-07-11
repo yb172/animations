@@ -341,6 +341,79 @@ class Copy(Scene):
         )
 
 
+class CopyBetter(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
+    def construct(self):
+        ROTATION = 2
+        SHIFT_UP = 0.5
+        SHIFT_DOWN = 2
+        THE_WORD = "Matrix"
+
+        # Create and add grid
+        grid = create_grid(len(THE_WORD))
+        grid.shift(SHIFT_UP*UP)
+        self.add(grid)
+
+        # Create, align & add word
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        word.shift(SHIFT_UP*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+            word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+        self.add(word)
+
+        original_word = word.copy()
+
+        self.wait()
+
+        var_grid = create_grid(2)
+        var_grid.shift(SHIFT_DOWN*DOWN)
+
+        self.play(FadeIn(var_grid))
+
+        arcs_up = VGroup()
+        for i in range(0, ROTATION):
+            ch = word[-i-1]
+            start = ch.get_center()
+            mid = start + (SHIFT_UP+SHIFT_DOWN)*DOWN
+            mid[0] = var_grid[-i-1].get_center()[0]
+            end = ch.get_center() + CELL_LEN*(len(THE_WORD)-ROTATION)*LEFT
+            arc_down = ArcBetweenPoints(start, mid, angle=-TAU/4)
+            arc_up = ArcBetweenPoints(mid, end, angle=-TAU/4)
+            arcs_up.add(arc_up)
+            self.play(MoveAlongPath(ch, arc_down), run_time=0.7)
+
+        for i in range(ROTATION, len(THE_WORD)):
+            shift = ROTATION*CELL_LEN*RIGHT
+            self.play(ApplyMethod(word[-i-1].shift, shift), run_time=0.7)
+
+        for i in range(0, ROTATION):
+            # Last character moving up
+            ch = word[-i-1]
+            self.play(MoveAlongPath(ch, arcs_up[i]), run_time=0.7)
+
+        self.play(FadeOut(var_grid))
+
+        self.wait()
+
+        self.play(
+            FadeOut(word),
+            FadeOut(grid)
+        )
+        self.play(
+            FadeIn(original_word),
+            FadeIn(grid)
+        )
+
+
 class InPlaceSlow(Scene):
     CONFIG = {
         "camera_config": {
