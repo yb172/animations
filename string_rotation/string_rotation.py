@@ -498,9 +498,10 @@ class InPlaceFastWrongButWorked(Scene):
         SHIFT_UP = 0.5
         SHIFT_DOWN = 2
         THE_WORD = "Section"
+        N = len(THE_WORD)
 
         # Create and add grid
-        grid = create_grid(len(THE_WORD))
+        grid = create_grid(N)
         grid.shift(SHIFT_UP*UP)
         self.add(grid)
 
@@ -511,7 +512,7 @@ class InPlaceFastWrongButWorked(Scene):
                     size=2)
         word.shift(SHIFT_UP*UP)
         x_mask = [1, 0, 0]
-        for i in range(0, len(grid)):
+        for i in range(0, N):
             word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
         self.add(word)
 
@@ -519,46 +520,60 @@ class InPlaceFastWrongButWorked(Scene):
 
         self.wait()
 
-        var_grid = create_cell("tmp")
-        var_grid.shift(SHIFT_DOWN*DOWN)
-
-        self.play(FadeIn(var_grid))
-
         idx = 0
-        first_ch = word[idx]
-        first_start = first_ch.get_center()
-        first_mid = first_start + (SHIFT_UP+SHIFT_DOWN)*DOWN
-        first_mid[0] = var_grid.get_center()[0]
-        first_end = first_ch.get_center() + ROTATION*CELL_LEN*RIGHT
-        first_arc_down = ArcBetweenPoints(first_start, first_mid, angle=-TAU/4)
-        self.play(MoveAlongPath(first_ch, first_arc_down), run_time=0.7)
+        new_idx = (idx + ROTATION) % N
 
-        arc_up = ArcBetweenPoints(first_mid, first_end, angle=-TAU/4)
+        # Move first character to its place and second to tmp
+        ch = word[idx]
+        arc_end = ch.get_center()
+        arc_end[0] = grid[new_idx].get_center()[0]
+        arc = ArcBetweenPoints(ch.get_center(), arc_end, angle=-TAU/3)
 
-        N = len(THE_WORD)
-        for step in range(0, N-1):
+        next_ch = word[new_idx]
+
+        curr_grid = create_cell("tmp")
+        curr_grid.move_to(grid[new_idx].get_center() + SHIFT_DOWN*DOWN)
+
+        self.play(
+            FadeIn(curr_grid),
+            MoveAlongPath(ch, arc),
+            ApplyMethod(next_ch.move_to, next_ch.get_center() + SHIFT_DOWN*DOWN),
+            run_time=0.7)
+
+        idx = new_idx
+
+        # Move the rest of characters except for last one
+        for step in range(0, N-2):
+            self.wait(0.5)
             # Pick the next character
             new_idx = (idx + ROTATION) % N
-            ch = word[new_idx]
-            start = ch.get_center()
-            mid = start + (SHIFT_UP+SHIFT_DOWN)*DOWN
-            mid[0] = var_grid.get_center()[0]
-            end = ch.get_center() + ROTATION*CELL_LEN*RIGHT
-            if new_idx + ROTATION >= N:
-                end = ch.get_center() + (N-ROTATION)*CELL_LEN*LEFT
-            arc_down = ArcBetweenPoints(start, mid, angle=TAU/4)
+            ch = word[idx]
+            next_ch = word[new_idx]
+            ch_end = ch.get_center() + SHIFT_DOWN*UP
+            ch_end[0] = grid[new_idx].get_center()[0]
+
+            next_grid = create_cell("tmp")
+            next_grid.move_to(grid[new_idx].get_center() + SHIFT_DOWN*DOWN)
             self.play(
-                MoveAlongPath(ch, arc_down),
-                MoveAlongPath(word[idx], arc_up),
+                FadeOut(curr_grid),
+                FadeIn(next_grid),
+                ApplyMethod(ch.move_to, ch_end),
+                ApplyMethod(next_ch.move_to, next_ch.get_center() + SHIFT_DOWN*DOWN),
                 run_time=0.7)
-            arc_up = ArcBetweenPoints(mid, end, angle=TAU/4)
+
             idx = new_idx
+            curr_grid = next_grid
 
-        self.play(MoveAlongPath(word[idx], arc_up), run_time=0.7)
-
-        self.wait()
-
-        self.play(FadeOut(var_grid))
+        # Move last character
+        self.wait(0.5)
+        new_idx = (idx + ROTATION) % N
+        ch = word[idx]
+        ch_end = ch.get_center() + SHIFT_DOWN*UP
+        ch_end[0] = grid[new_idx].get_center()[0]
+        self.play(
+            FadeOut(curr_grid),
+            ApplyMethod(ch.move_to, ch_end),
+            run_time=0.7)
 
         self.wait()
 
