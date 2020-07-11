@@ -486,6 +486,199 @@ class InPlaceSlow(Scene):
         )
 
 
+class InPlaceFastWrongButWorked(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
+    def construct(self):
+        ROTATION = 2
+        SHIFT_UP = 0.5
+        SHIFT_DOWN = 2
+        THE_WORD = "Section"
+
+        # Create and add grid
+        grid = create_grid(len(THE_WORD))
+        grid.shift(SHIFT_UP*UP)
+        self.add(grid)
+
+        # Create, align & add word
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        word.shift(SHIFT_UP*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+            word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+        self.add(word)
+
+        original_word = word.copy()
+
+        self.wait()
+
+        var_grid = create_cell("tmp")
+        var_grid.shift(SHIFT_DOWN*DOWN)
+
+        self.play(FadeIn(var_grid))
+
+        idx = 0
+        first_ch = word[idx]
+        first_start = first_ch.get_center()
+        first_mid = first_start + (SHIFT_UP+SHIFT_DOWN)*DOWN
+        first_mid[0] = var_grid.get_center()[0]
+        first_end = first_ch.get_center() + ROTATION*CELL_LEN*RIGHT
+        first_arc_down = ArcBetweenPoints(first_start, first_mid, angle=-TAU/4)
+        self.play(MoveAlongPath(first_ch, first_arc_down), run_time=0.7)
+
+        arc_up = ArcBetweenPoints(first_mid, first_end, angle=-TAU/4)
+
+        N = len(THE_WORD)
+        for step in range(0, N-1):
+            # Pick the next character
+            new_idx = (idx + ROTATION) % N
+            ch = word[new_idx]
+            start = ch.get_center()
+            mid = start + (SHIFT_UP+SHIFT_DOWN)*DOWN
+            mid[0] = var_grid.get_center()[0]
+            end = ch.get_center() + ROTATION*CELL_LEN*RIGHT
+            if new_idx + ROTATION >= N:
+                end = ch.get_center() + (N-ROTATION)*CELL_LEN*LEFT
+            arc_down = ArcBetweenPoints(start, mid, angle=TAU/4)
+            self.play(
+                MoveAlongPath(ch, arc_down),
+                MoveAlongPath(word[idx], arc_up),
+                run_time=0.7)
+            arc_up = ArcBetweenPoints(mid, end, angle=TAU/4)
+            idx = new_idx
+
+        self.play(MoveAlongPath(word[idx], arc_up), run_time=0.7)
+
+        self.wait()
+
+        self.play(FadeOut(var_grid))
+
+        self.wait()
+
+        self.play(
+            FadeOut(word),
+            FadeOut(grid)
+        )
+        self.play(
+            FadeIn(original_word),
+            FadeIn(grid)
+        )
+
+
+# This is the same as InPlaceFastWrongButWorked except the right movements
+# are hardcoded to make it work (it's needed all letters keep their original
+# indexes. We don't doning word[2] = word[0], instead we move word[0] to 2's place)
+class InPlaceFastWrong(Scene):
+    CONFIG = {
+        "camera_config": {
+            "background_color": WHITE,
+        },
+    }
+
+    def construct(self):
+        ROTATION = 2
+        SHIFT_UP = 0.5
+        SHIFT_DOWN = 2
+        THE_WORD = "Matrix"
+
+        # Create and add grid
+        grid = create_grid(len(THE_WORD))
+        grid.shift(SHIFT_UP*UP)
+        self.add(grid)
+
+        # Create, align & add word
+        word = Text(THE_WORD,
+                    font='Merriweather',
+                    color=ALMOST_BLACK,
+                    size=2)
+        word.shift(SHIFT_UP*UP)
+        x_mask = [1, 0, 0]
+        for i in range(0, len(grid)):
+            word[i].move_to(grid[i].get_center(), coor_mask=x_mask)
+        self.add(word)
+
+        original_word = word.copy()
+
+        self.wait()
+
+        var_grid = create_cell("tmp")
+        var_grid.shift(SHIFT_DOWN*DOWN)
+
+        self.play(FadeIn(var_grid))
+
+        idx = 0
+        first_ch = word[idx]
+        first_start = first_ch.get_center()
+        first_mid = first_start + (SHIFT_UP+SHIFT_DOWN)*DOWN
+        first_mid[0] = var_grid.get_center()[0]
+        first_end = first_ch.get_center() + ROTATION*CELL_LEN*RIGHT
+        first_arc_down = ArcBetweenPoints(first_start, first_mid, angle=-TAU/4)
+        self.play(MoveAlongPath(first_ch, first_arc_down), run_time=0.7)
+
+        arc_up = ArcBetweenPoints(first_mid, first_end, angle=-TAU/4)
+
+        N = len(THE_WORD)
+        for step in range(0, 3):
+            # Pick the next character
+            new_idx = (idx + ROTATION) % N
+            ch = word[new_idx]
+            start = ch.get_center()
+            mid = start + (SHIFT_UP+SHIFT_DOWN)*DOWN
+            mid[0] = var_grid.get_center()[0]
+            end = ch.get_center() + ROTATION*CELL_LEN*RIGHT
+            if new_idx + ROTATION >= N:
+                end = ch.get_center() + (N-ROTATION)*CELL_LEN*LEFT
+            arc_down = ArcBetweenPoints(start, mid, angle=TAU/4)
+            self.play(
+                MoveAlongPath(ch, arc_down),
+                MoveAlongPath(word[idx], arc_up),
+                run_time=0.7)
+            arc_up = ArcBetweenPoints(mid, end, angle=TAU/4)
+            idx = new_idx
+
+        for step in range(3, 5):
+            # Pick the next character
+            new_idx = (idx + ROTATION) % N
+            ch = word[new_idx]
+            start = ch.get_center()
+            mid = start + (SHIFT_UP+SHIFT_DOWN)*DOWN
+            mid[0] = var_grid.get_center()[0]
+            end = ch.get_center() + ROTATION*CELL_LEN*RIGHT
+            if new_idx == 2:
+                end = ch.get_center() + (N-ROTATION)*CELL_LEN*LEFT
+            arc_down = ArcBetweenPoints(start, mid, angle=TAU/4)
+            self.play(
+                MoveAlongPath(ch, arc_down),
+                MoveAlongPath(word[idx], arc_up),
+                run_time=0.7)
+            arc_up = ArcBetweenPoints(mid, end, angle=TAU/4)
+            idx = new_idx
+
+        self.play(MoveAlongPath(word[idx], arc_up), run_time=0.7)
+
+        self.wait()
+
+        self.play(FadeOut(var_grid))
+
+        self.wait()
+
+        self.play(
+            FadeOut(word),
+            FadeOut(grid)
+        )
+        self.play(
+            FadeIn(original_word),
+            FadeIn(grid)
+        )
+
+
 class InPlaceFast(Scene):
     CONFIG = {
         "camera_config": {
